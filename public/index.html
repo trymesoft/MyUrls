@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyUrls</title>
+  <title>{{.title}}</title>
 
   <link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">
   <script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
@@ -33,8 +33,8 @@
   </div>
 
   <script>
-    const repo = 'https://github.com/CareyWang/MyUrls'
-    const backend = 'http://example.com'
+    const repo = '{{.repo}}'
+    const backend = '{{.backend}}'
 
     let app = new Vue({
       el: "#app",

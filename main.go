@@ -41,7 +41,7 @@ type redisPoolConf struct {
 const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // shortUrlLen is the length of the generated short URL.
-const shortUrlLen = 7
+const shortUrlLen = 3
 
 // defaultPort is the default port number.
 const defaultPort int = 8002
@@ -76,6 +76,8 @@ func main() {
 
 	// Log 收集中间件
 	router.Use(LoggerToFile())
+	// favicon 处理中间件
+	router.Use(HandleFavicon("public/favicon.ico"))
 
 	router.LoadHTMLGlob("public/*.html")
 
@@ -103,9 +105,17 @@ func main() {
 	}
 	initRedisPool()
 
+	protocol := "http://"
+	if *https != 0 {
+		protocol = "https://"
+	}
+
 	router.GET("/", func(context *gin.Context) {
 		context.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "MyUrls",
+			"repo":  "https://tryme.wang/",
+			// 默认后端为 domain
+			"backend": protocol + *domain,
 		})
 	})
 
@@ -151,10 +161,6 @@ func main() {
 			shortKey = longToShort(longUrl, *ttl*secondsPerDay)
 		}
 
-		protocol := "http://"
-		if *https != 0 {
-			protocol = "https://"
-		}
 		res.ShortUrl = protocol + *domain + "/" + shortKey
 
 		// context.Header("Access-Control-Allow-Origin", "*")
@@ -381,5 +387,16 @@ func initRedisPool() {
 			}
 			return con, nil
 		},
+	}
+}
+
+func HandleFavicon(path string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/favicon.ico" {
+			c.File(path)
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }
